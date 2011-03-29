@@ -245,10 +245,18 @@ class Chef
         end
 
         # wait for it to be ready to do stuff
-        server.wait_for { print "."; ready? }
+        if config[:machine_role]!=""
+          connection.create_tags(server.id,{"Name"=>config[:chef_node_name],"#{config[:machine_role]}"=>""})
+        else
+          connection.create_tags(server.id,{"Name"=>config[:chef_node_name]})
+        end
         
         #set the Name tag and new tag with machine-role as key
-        connection.create_tags(server.id,{"Name"=>config[:chef_node_name],"#{config[:machine_role]}"=>""})
+        if config[:machine_role]!=""
+          connection.create_tags(server.id,{"Name"=>config[:chef_node_name],"#{config[:machine_role]}"=>""})
+        else
+          connection.create_tags(server.id,{"Name"=>config[:chef_node_name]})
+        end
  
 
         puts("\n")
