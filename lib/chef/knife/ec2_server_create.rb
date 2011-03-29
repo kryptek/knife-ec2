@@ -146,6 +146,11 @@ class Chef
         :boolean => true,
         :default => false
 
+      option :machine_role,
+        :long => "--machine-role ROLE",
+        :description => "Machine role, example HDFS_Slave",
+        :default => ""
+
       def h
         @highline ||= HighLine.new
       end
@@ -229,7 +234,8 @@ class Chef
         puts "#{h.color("Security Groups", :cyan)}: #{server.groups.join(", ")}"
         puts "#{h.color("SSH Key", :cyan)}: #{server.key_name}"
         puts "#{h.color("Subnet ID", :cyan)}: #{server.subnet_id}" if vpc_mode?
-
+        puts "#{h.color("EC2 instance Name", :cyan)}: #{config[:chef_node_name]}"
+        puts "#{h.color("Machine Role", :cyan)}: #{config[:machine_role]}"
         print "\n#{h.color("Waiting for server", :magenta)}"
 
         display_name = if vpc_mode?
@@ -240,6 +246,10 @@ class Chef
 
         # wait for it to be ready to do stuff
         server.wait_for { print "."; ready? }
+        
+        #set the Name tag and new tag with machine-role as key
+        connection.create_tags(server.id,{"Name"=>config[:chef_node_name],"#{config[:machine_role]}"=>""})
+ 
 
         puts("\n")
 
